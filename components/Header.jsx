@@ -1,5 +1,5 @@
 "use client";
-import { SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { SignInButton, SignUpButton, useAuth, UserButton } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,12 +7,23 @@ import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { BarLoader } from "react-spinners";
-import { useStoreUser } from "@/hooks/user-store-user";
-import { Building, Plus, Ticket } from "lucide-react";
+import { useStoreUser } from "@/hooks/use-store-user";
+import { Building, Crown, Plus, Ticket } from "lucide-react";
+import Onboarding from "./onboarding";
+import { useOnboarding } from "@/hooks/use-onboard";
+import SearchBar from "./SearchBar";
+import { Badge } from "./ui/badge";
+import UpgradeModel from "./UpgradeModel";
 
 const Header = () => {
   const { isLoading } = useStoreUser();
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const { showOnboarding, handleOnboardingComplete, handleOnboardingSkip } =
+    useOnboarding();
+
+  const { has } = useAuth();
+  const isPro = has?.({ plan: "pro" });
+
   return (
     <>
       <nav className="fixed top-0 right-0 bg-background/80 backdrop-blur-xl z-20 left-0 border-b">
@@ -27,30 +38,42 @@ const Header = () => {
               className="w-full h-11"
               priority
             />
+            
+            {/* Pro Badge */}
+            {isPro && (
+              <Badge
+                className={
+                  "bg-linear-to-r from-pink-500 to-orange-500 gap-1 text-white ml-3"
+                }
+              >
+                <Crown className="w-3 h-3" />
+                Pro
+              </Badge>
+            )}
           </Link>
 
           {/* Location Search */}
+          <div className="hidden md:flex flex-1 justify-center">
+            <SearchBar />
+          </div>
 
           {/* Side actions */}
           <div className=" flex items-center">
-            <Button
-              variant={"ghost"}
-              size="sm"
-              onClick={() => setShowUpgrade(!showUpgrade)}
-            >
-              Pricing
-            </Button>
-            <Button
-              variant={"ghost"}
-              size="sm"
-              asChild 
-              className={"mr-2"}
-            >
+            {!isPro && (
+              <Button
+                variant={"ghost"}
+                size="sm"
+                onClick={() => setShowUpgrade(!showUpgrade)}
+              >
+                Pricing
+              </Button>
+            )}
+            <Button variant={"ghost"} size="sm" asChild className={"mr-2"}>
               <Link href={"/explore"}>Explore</Link>
             </Button>
 
             <Authenticated>
-              <Button className={"flex gap-2 mr-4"} size="sm" asChild >
+              <Button className={"flex gap-2 mr-4"} size="sm" asChild>
                 <Link href="/create-event">
                   <Plus className="w-4 h-4" />
                   <span className="hidden sm:inline">Create Event</span>
@@ -69,7 +92,7 @@ const Header = () => {
                     labelIcon={<Building size={16} />}
                     href="/my-events"
                   />
-                  <UserButton.Action label="manageAcoount" />
+                  <UserButton.Action label="manageAccount" />
                 </UserButton.MenuItems>
               </UserButton>
             </Authenticated>
@@ -84,6 +107,10 @@ const Header = () => {
         </div>
 
         {/* Mobile Actions */}
+        <div className="md:hidden border-t px-3 py-3">
+          <SearchBar />
+        </div>
+
         {/* Loader */}
         {isLoading && (
           <div className="absolute bottom-0 left-0 w-full">
@@ -91,6 +118,19 @@ const Header = () => {
           </div>
         )}
       </nav>
+
+      {/* Modals */}
+      <Onboarding
+        isOpen={showOnboarding}
+        onClose={handleOnboardingSkip}
+        onComplete={handleOnboardingComplete}
+      />
+
+      <UpgradeModel
+        isOpen={showUpgrade}
+        onClose={() => setShowUpgrade(false)}
+        trigger="header"
+      />
     </>
   );
 };
