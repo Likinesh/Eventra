@@ -63,7 +63,7 @@ const Explore = () => {
 
   const handleClick = (slug) => {
     if (!slug) return;
-    router.push(`/explore/${slug}`);
+    router.push(`/events/${slug}`);
   };
 
   const handleCategory = (cid) => {

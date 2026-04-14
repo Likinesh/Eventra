@@ -1,3 +1,5 @@
+"use client"
+
 import { useMutation, useQuery } from "convex/react"
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";

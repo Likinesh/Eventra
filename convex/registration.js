@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 
 function generateQRCode() {
@@ -35,7 +35,7 @@ export const registerForEvent = mutation({
       throw new error("You are already registered for this event");
     }
 
-    const QRcode = generateQRCode();
+    const qrCode = generateQRCode();
     const registrationId = await ctx.db.insert("registrations", {
       eventId: args.eventId,
       userId: user._id,
