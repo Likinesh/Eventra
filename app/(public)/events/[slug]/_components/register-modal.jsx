@@ -25,12 +25,12 @@ export default function RegisterModal({ event, isOpen, onClose }) {
   const { user } = useUser();
   const [name, setName] = useState(user?.fullName || "");
   const [email, setEmail] = useState(
-    user?.primaryEmailAddress?.emailAddress || ""
+    user?.primaryEmailAddress?.emailAddress || "",
   );
   const [isSuccess, setIsSuccess] = useState(false);
 
   const { mutate: registerForEvent, isLoading } = useConvexMutation(
-    api.registration.registerForEvent
+    api.registration.registerForEvent,
   );
 
   const handleSubmit = async (e) => {
@@ -70,7 +70,7 @@ export default function RegisterModal({ event, isOpen, onClose }) {
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold mb-2">You&apos;re All Set!</h2>
+              <h2 className="text-2xl font-bold mb-2">🎉 You&apos;re In!</h2>
               <p className="text-muted-foreground">
                 Your registration is confirmed. Check your Tickets for event
                 details and your QR code ticket.
@@ -86,6 +86,9 @@ export default function RegisterModal({ event, isOpen, onClose }) {
                 Close
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Secure registration. Your details are safe.
+            </p>
           </div>
         </DialogContent>
       </Dialog>

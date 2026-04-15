@@ -12,76 +12,24 @@ export default function EventCard({
   event,
   onClick,
   onDelete,
-  variant = "grid", // "grid" or "list"
-  action = null, // "event" | "ticket" | null
+  variant = "grid",
+  action = null,
   className = "",
 }) {
-  // List variant (compact horizontal layout)
-  if (variant === "list") {
-    return (
-      <Card
-        className={`py-0 group cursor-pointer hover:shadow-lg transition-all hover:border-purple-500/50 ${className}`}
-        onClick={onClick}
-      >
-        <CardContent className="p-3 flex gap-3">
-          {/* Event Image */}
-          <div className="w-20 h-20 rounded-lg shrink-0 overflow-hidden relative">
-            {event.coverImage ? (
-              <Image
-                src={event.coverImage}
-                alt={event.title}
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <div
-                className="absolute inset-0 flex items-center justify-center text-3xl"
-                style={{ backgroundColor: event.themeColor }}
-              >
-                {getCategoryIcon(event.category)}
-              </div>
-            )}
-          </div>
 
-          {/* Event Details */}
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-sm mb-1 group-hover:text-purple-400 transition-colors line-clamp-2">
-              {event.title}
-            </h3>
-            <p className="text-xs text-muted-foreground mb-1">
-              {format(event.startDate, "EEE, dd MMM, HH:mm")}
-            </p>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-              <MapPin className="w-3 h-3" />
-              <span className="line-clamp-1">
-                {event.locationType === "online" ? "Online Event" : event.city}
-              </span>
-            </div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Users className="w-3 h-3" />
-              <span>{event.registrationCount} attending</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Grid variant (default - original design)
   return (
     <Card
-      className={`overflow-hidden group pt-0 ${onClick ? "cursor-pointer hover:shadow-lg transition-all hover:border-purple-500/50" : ""} ${className}`}
+      className={`overflow-hidden group cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl border border-border/50 hover:border-purple-500/40 ${className}`}
       onClick={onClick}
     >
-      <div className="relative h-48 overflow-hidden">
+      {/* 🔥 IMAGE */}
+      <div className="relative h-52 overflow-hidden">
         {event.coverImage ? (
           <Image
             src={event.coverImage}
             alt={event.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-            width={500}
-            height={192}
-            priority
+            fill
+            className="object-cover group-hover:scale-110 transition-transform duration-500"
           />
         ) : (
           <div
@@ -91,28 +39,49 @@ export default function EventCard({
             {getCategoryIcon(event.category)}
           </div>
         )}
-        <div className="absolute top-3 right-3">
-          <Badge variant="secondary">
-            {event.ticketType === "free" ? "Free" : "Paid"}
+
+        {/* Overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+        {/* Price badge */}
+        <div className="absolute top-3 left-3">
+          <Badge className="bg-black/70 backdrop-blur text-white">
+            {event.ticketType === "free"
+              ? "Free"
+              : `₹${event.ticketPrice}`}
           </Badge>
         </div>
+
+        {/* Trending badge (optional future) */}
+        {event.registrationCount > 50 && (
+          <div className="absolute top-3 right-3">
+            <Badge className="bg-gradient-to-r from-pink-500 to-purple-500 text-white">
+              🔥 Trending
+            </Badge>
+          </div>
+        )}
       </div>
 
-      <CardContent className="space-y-3">
-        <div>
-          <Badge variant="outline" className="mb-2">
-            {getCategoryIcon(event.category)} {getCategoryLabel(event.category)}
-          </Badge>
-          <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-purple-400 transition-colors">
-            {event.title}
-          </h3>
-        </div>
+      {/* 🔥 CONTENT */}
+      <CardContent className="space-y-3 p-4">
 
+        {/* Category */}
+        <Badge variant="outline" className="w-fit">
+          {getCategoryIcon(event.category)} {getCategoryLabel(event.category)}
+        </Badge>
+
+        {/* Title */}
+        <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-purple-400 transition-colors">
+          {event.title}
+        </h3>
+
+        {/* Info */}
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             <span>{format(event.startDate, "PPP")}</span>
           </div>
+
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
             <span className="line-clamp-1">
@@ -121,21 +90,21 @@ export default function EventCard({
                 : `${event.city}, ${event.state || event.country}`}
             </span>
           </div>
+
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4" />
             <span>
-              {event.registrationCount} / {event.capacity} registered
+              {event.registrationCount}/{event.capacity} attending
             </span>
           </div>
         </div>
 
+        {/* 🔥 CTA */}
         {action && (
-          <div className="flex gap-2 pt-2">
-            {/* Primary button */}
+          <div className="flex gap-2 pt-3">
             <Button
-              variant="outline"
               size="sm"
-              className="flex-1 gap-2 cursor-pointer"
+              className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90"
               onClick={(e) => {
                 e.stopPropagation();
                 onClick?.(e);
@@ -143,23 +112,22 @@ export default function EventCard({
             >
               {action === "event" ? (
                 <>
-                  <Eye className="w-4 h-4" />
-                  View
+                  <Eye className="w-4 h-4 mr-1" />
+                  View Event
                 </>
               ) : (
                 <>
-                  <QrCode className="w-4 h-4" />
+                  <QrCode className="w-4 h-4 mr-1" />
                   Show Ticket
                 </>
               )}
             </Button>
 
-            {/* Secondary button - delete / cancel */}
             {onDelete && (
               <Button
-                variant="outline"
                 size="sm"
-                className="gap-2 text-red-500 hover:text-red-600 hover:bg-red-50 cursor-pointer"
+                variant="outline"
+                className="text-red-500 hover:bg-red-500/10"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete(event._id);

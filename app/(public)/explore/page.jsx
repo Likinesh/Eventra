@@ -61,9 +61,15 @@ const Explore = () => {
     };
   });
 
-  const handleClick = (slug) => {
-    if (!slug) return;
-    router.push(`/events/${slug}`);
+  const handleClick = (event) => {
+    if (!event) return;
+
+    // If organizer then go to dashboard
+    if (currentUser?._id === event.organizerId) {
+      router.push(`/my-events/${event._id}`);
+    } else {
+      router.push(`/events/${event.slug}`);
+    }
   };
 
   const handleCategory = (cid) => {
@@ -109,7 +115,7 @@ const Explore = () => {
                 <CarouselItem key={event._id}>
                   <div
                     className="relative h-100 rounded-xl overflow-hidden cursor-pointer"
-                    onClick={() => handleClick(event.slug)}
+                    onClick={() => handleClick(event)}
                   >
                     {event.coverImage ? (
                       <Image
@@ -191,7 +197,7 @@ const Explore = () => {
                 key={event._id}
                 event={event}
                 variant="grid"
-                onClick={() => handleClick(event.slug)}
+                onClick={() => handleClick(event)}
               />
             ))}
           </div>
@@ -241,7 +247,7 @@ const Explore = () => {
                 key={event._id}
                 event={event}
                 variant="list"
-                onClick={() => handleClick(event.slug)}
+                onClick={() => handleClick(event)}
               />
             ))}
           </div>

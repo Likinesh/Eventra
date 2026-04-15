@@ -8,16 +8,16 @@ import { Toaster } from "sonner";
 import Footer from "@/components/Footer";
 
 export const metadata = {
-  title: "Spott",
+  title: "Eventra",
   description:
-    "Discover and create amazing events with Spott - your ultimate event discovery and creation platform.",
+    "Discover and create amazing events with Eventra - your ultimate event discovery and creation platform.",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`bg-linear-to-br from-gray-950 via-zinc-900 to-stone-900 text-white`}
+        className={`bg-linear-to-br from-black via-[#0B0B0F] to-[#111827]bg-linear-to-br from-gray-950 via-zinc-900 to-stone-900 text-white`}
       >
         <ThemeProvider
           attribute="class"
@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
         >
           <ClerkProvider
             appearance={{
-              baseTheme: dark
+              baseTheme: dark,
             }}
           >
             <ConvexClientProvider>
@@ -41,7 +41,11 @@ export default function RootLayout({ children }) {
                   <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl" />
                 </div>
 
-                <div className="relative z-10]">{children}</div>
+                <div className="relative z-10">
+                  <div className="perspective-distant">
+                    <div className="transform-gpu">{children}</div>
+                  </div>
+                </div>
 
                 {/* Footer */}
                 <Footer />

@@ -118,6 +118,7 @@ const MyTickets = () => {
             <Button className={"gap-2"} asChild>
               <Link href={"/explore"}>
                 <Ticket className="w-4 h-4" />
+                Check out events
               </Link>
             </Button>
           </Card>
