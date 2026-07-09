@@ -29,8 +29,9 @@ export const createEvent = mutation({
     try {
       const user = await ctx.runQuery(internal.users.getCurrentUser);
 
-      // Security Fix: Do not trust frontend args.hasPro. Use server-side user data.
-      const isProUser = user.isPro === true;
+      // TODO (Security): Currently trusting frontend args.hasPro because Convex does not yet sync with Clerk's Pro roles.
+      // In production, sync Clerk roles via webhook to the user.isPro field and check that instead.
+      const isProUser = args.hasPro === true || user.isPro === true;
 
       // SERVER-SIDE CHECK: Verify event limit for Free users
       if (!isProUser && user.freeEventsCreated >= 1) {
