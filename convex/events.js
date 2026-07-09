@@ -9,8 +9,7 @@ export const getFeaturedEvents = query({
     const now = Date.now();
     const events = await ctx.db
       .query("events")
-      .withIndex("by_start_date")
-      .filter((q) => q.gte(q.field("startDate"), now))
+      .withIndex("by_start_date", (q) => q.gte("startDate", now))
       .order("desc")
       .collect();
 
@@ -33,8 +32,7 @@ export const getEventByLocation = query({
     const now = Date.now();
     let events = await ctx.db
       .query("events")
-      .withIndex("by_start_date")
-      .filter((q) => q.gte(q.field("startDate"), now))
+      .withIndex("by_start_date", (q) => q.gte("startDate", now))
       .collect();
 
     if (args.city) {
@@ -59,8 +57,7 @@ export const getPopularEvents = query({
     const now = Date.now();
     let events = await ctx.db
       .query("events")
-      .withIndex("by_start_date")
-      .filter((q) => q.gte(q.field("startDate"), now))
+      .withIndex("by_start_date", (q) => q.gte("startDate", now))
       .collect();
 
     const popular = events
@@ -94,8 +91,7 @@ export const getCategoryCount = query({
         const now = Date.now();
         const events = await ctx.db
         .query('events')
-        .withIndex("by_start_date")
-        .filter((q) => q.gte(q.field("startDate"), now ))
+        .withIndex("by_start_date", (q) => q.gte("startDate", now))
         .collect();
 
         const counts = {};

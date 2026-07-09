@@ -32,7 +32,7 @@ export const registerForEvent = mutation({
       .unique();
 
     if (alreadyRegistered) {
-      throw new error("You are already registered for this event");
+      throw new Error("You are already registered for this event");
     }
 
     const qrCode = generateQRCode();
@@ -186,6 +186,11 @@ export const checkInAttendee = mutation({
     // Check if user is the organizer
     if (event.organizerId !== user._id) {
       throw new Error("You are not authorized to check in attendees");
+    }
+
+    // Check if registration is valid and not cancelled
+    if (registration.status !== "confirmed") {
+      throw new Error("Registration is cancelled or invalid");
     }
 
     // Check if already checked in

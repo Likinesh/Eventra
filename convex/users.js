@@ -8,7 +8,7 @@ export const store = mutation({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new Error("Called storeUser with authentication present");
+      throw new Error("Called storeUser without authentication present");
     }
     const user = await ctx.db
       .query("users")

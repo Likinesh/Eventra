@@ -29,8 +29,11 @@ export const createEvent = mutation({
     try {
       const user = await ctx.runQuery(internal.users.getCurrentUser);
 
+      // Security Fix: Do not trust frontend args.hasPro. Use server-side user data.
+      const isProUser = user.isPro === true;
+
       // SERVER-SIDE CHECK: Verify event limit for Free users
-      if (!args.hasPro && user.freeEventsCreated >= 1) {
+      if (!isProUser && user.freeEventsCreated >= 1) {
         throw new Error(
           "Free event limit reached. Please upgrade to Pro to create more events."
         );
@@ -38,14 +41,14 @@ export const createEvent = mutation({
 
       // SERVER-SIDE CHECK: Verify custom color usage
       const defaultColor = "#1e3a8a";
-      if (!args.hasPro && args.themeColor && args.themeColor !== defaultColor) {
+      if (!isProUser && args.themeColor && args.themeColor !== defaultColor) {
         throw new Error(
           "Custom theme colors are a Pro feature. Please upgrade to Pro."
         );
       }
 
       // Force default color for Free users
-      const themeColor = args.hasPro ? args.themeColor : defaultColor;
+      const themeColor = isProUser ? args.themeColor : defaultColor;
 
       // Generate slug from title
       const slug = args.title
@@ -135,8 +138,8 @@ export const deleteEvent = mutation({
     // Delete the event
     await ctx.db.delete(args.eventId);
 
-    // Update free event count if it was a free event
-    if (event.ticketType === "free" && user.freeEventsCreated > 0) {
+    // Update created event count so they can create a new one if they delete it
+    if (user.freeEventsCreated > 0) {
       await ctx.db.patch(user._id, {
         freeEventsCreated: user.freeEventsCreated - 1,
       });

@@ -1,10 +1,16 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export async function POST(req) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { prompt } = await req.json();
     if (!prompt) {
       return NextResponse.json(
@@ -13,7 +19,7 @@ export async function POST(req) {
       );
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash " });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const systemPrompt = `You are an event planning assistant. Generate event details based on the user's description.
 
 CRITICAL: Return ONLY valid JSON with properly escaped strings. No newlines in string values - use spaces instead.

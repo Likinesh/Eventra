@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { QrCode, Loader2 } from "lucide-react";
 import { useConvexMutation } from "@/hooks/use-convex-query";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
+import QrScanner from "qr-scanner";
 
 import {
   Dialog,
@@ -17,6 +18,7 @@ import {
 export default function QRScannerModal({ isOpen, onClose }) {
   const [scannerReady, setScannerReady] = useState(false);
   const [error, setError] = useState(null);
+  const videoRef = useRef(null);
 
   const { mutate: checkInAttendee } = useConvexMutation(
     api.registration.checkInAttendee
@@ -37,81 +39,45 @@ export default function QRScannerModal({ isOpen, onClose }) {
     }
   };
 
-  // Initialize QR Scanner
   useEffect(() => {
-    let scanner = null;
-    let mounted = true;
+    let qrScanner = null;
 
-    const initScanner = async () => {
-      if (!isOpen) return;
+    if (isOpen && videoRef.current) {
+      console.log("Initializing QR scanner...");
 
-      try {
-        console.log("Initializing QR scanner...");
-
-        // Check camera permissions first
-        try {
-          await navigator.mediaDevices.getUserMedia({ video: true });
-          console.log("Camera permission granted");
-        } catch (permError) {
-          console.error("Camera permission denied:", permError);
-          setError("Camera permission denied. Please enable camera access.");
-          return;
+      qrScanner = new QrScanner(
+        videoRef.current,
+        (result) => {
+          console.log("QR Code detected:", result.data);
+          if (qrScanner) {
+             qrScanner.stop();
+          }
+          handleCheckIn(result.data);
+        },
+        { 
+          highlightScanRegion: true, 
+          highlightCodeOutline: true,
+          preferredCamera: "environment"
         }
+      );
 
-        // Dynamically import the library
-        const { Html5QrcodeScanner } = await import("html5-qrcode");
-
-        if (!mounted) return;
-
-        console.log("Creating scanner instance...");
-
-        scanner = new Html5QrcodeScanner(
-          "qr-reader",
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
-            showTorchButtonIfSupported: true,
-            videoConstraints: {
-              facingMode: "environment", // Use back camera on mobile
-            },
-          },
-          /* verbose= */ false
-        );
-
-        const onScanSuccess = (decodedText) => {
-          console.log("QR Code detected:", decodedText);
-          if (scanner) {
-            scanner.clear().catch(console.error);
-          }
-          handleCheckIn(decodedText);
-        };
-
-        const onScanError = (error) => {
-          // Only log actual errors, not "no QR code found" messages
-          if (error && !error.includes("NotFoundException")) {
-            console.debug("Scan error:", error);
-          }
-        };
-
-        scanner.render(onScanSuccess, onScanError);
-        setScannerReady(true);
-        setError(null);
-        console.log("Scanner rendered successfully");
-      } catch (error) {
-        console.error("Failed to initialize scanner:", error);
-        setError(`Failed to start camera: ${error.message}`);
-        toast.error("Camera failed. Please use manual entry.");
-      }
-    };
-
-    initScanner();
+      qrScanner.start()
+        .then(() => {
+          setScannerReady(true);
+          setError(null);
+        })
+        .catch((err) => {
+          console.error("Failed to start camera:", err);
+          setError("Camera permission denied or not available.");
+          toast.error("Camera failed. Please use manual entry.");
+        });
+    }
 
     return () => {
-      mounted = false;
-      if (scanner) {
+      if (qrScanner) {
         console.log("Cleaning up scanner...");
-        scanner.clear().catch(console.error);
+        qrScanner.stop();
+        qrScanner.destroy();
       }
       setScannerReady(false);
     };
@@ -133,26 +99,23 @@ export default function QRScannerModal({ isOpen, onClose }) {
         {error ? (
           <div className="text-red-500 text-sm">{error}</div>
         ) : (
-          <>
-            <div
-              id="qr-reader"
-              className="w-full"
-              style={{ minHeight: "350px" }}
-            ></div>
+          <div className="flex flex-col items-center relative">
+            <video 
+              ref={videoRef} 
+              className="w-full rounded-md shadow-sm border border-white/10" 
+              style={{ minHeight: "250px", backgroundColor: "#000" }} 
+            />
             {!scannerReady && (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-                <span className="ml-2 text-sm text-muted-foreground">
-                  Starting camera...
-                </span>
+              <div className="flex items-center justify-center py-4 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                <Loader2 className="w-8 h-8 animate-spin text-purple-500 bg-black/50 p-1 rounded-full" />
               </div>
             )}
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="text-sm text-muted-foreground mt-4 text-center">
               {scannerReady
                 ? "Position the QR code within the frame"
                 : "Please allow camera access when prompted"}
             </p>
-          </>
+          </div>
         )}
       </DialogContent>
     </Dialog>

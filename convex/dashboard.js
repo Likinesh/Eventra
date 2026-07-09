@@ -40,7 +40,7 @@ export const getEventDashboard = query({
     // Calculate revenue for paid events
     let totalRevenue = 0;
     if (event.ticketType === "paid" && event.ticketPrice) {
-      totalRevenue = checkedInCount * event.ticketPrice;
+      totalRevenue = totalRegistrations * event.ticketPrice;
     }
 
     // Calculate check-in rate
