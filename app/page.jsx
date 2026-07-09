@@ -1,28 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import AnimatedText from "@/components/AnimatedText";
-import Particles, { initParticlesEngine } from "@tsparticles/react";
+import Particles, { ParticlesProvider } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
 
 export default function Home() {
-  const [init, setInit] = useState(false);
-
-  useEffect(() => {
-    initParticlesEngine(async (engine) => {
-      await loadSlim(engine);
-    }).then(() => {
-      setInit(true);
-    });
-  }, []);
-
   return (
+    <ParticlesProvider init={loadSlim}>
     <div className="relative overflow-hidden">
       {/* 🌌 PARTICLES */}
-      {init && (
         <Particles
           id="tsparticles"
           options={{
@@ -36,7 +25,6 @@ export default function Home() {
         }}
         className="absolute inset-0 -z-10"
       />
-      )}
 
       {/* 🔥 BACKGROUND */}
       <div className="absolute inset-0 -z-20 bg-linear-to-br from-black via-[#0B0B0F] to-[#111827]" />
@@ -192,5 +180,6 @@ export default function Home() {
         </Link>
       </section>
     </div>
+    </ParticlesProvider>
   );
 }
